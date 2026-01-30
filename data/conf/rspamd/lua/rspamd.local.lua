@@ -392,6 +392,7 @@ rspamd_config:register_symbol({
     local rspamd_http = require "rspamd_http"
     local rcpts = task:get_recipients('smtp')
     local lua_util = require "lua_util"
+    local tagged_rcpt = task:get_symbol("TAGGED_RCPT")
 
     local function remove_moo_tag()
       local moo_tag_header = task:get_header('X-Moo-Tag', false)
@@ -416,12 +417,9 @@ rspamd_config:register_symbol({
 
     -- Check if recipient has a tag (contains '+')
     local tag = nil
-    if rcpt_user:find('%+') then
-      local base_user, tag_part = rcpt_user:match('^(.-)%+(.+)$')
-      if base_user and tag_part then
-        tag = tag_part
-        rspamd_logger.infox("TAG_MOO: found tag in recipient: %s (base: %s, tag: %s)", rcpt_addr, base_user, tag)
-      end
+    if tagged_rcpt ~= nil then
+      tag = tagged_rcpt
+      rspamd_logger.infox("TAG_MOO: found tag in recipient: %s (base: %s, tag: %s)", rcpt_addr, base_user, tag)
     end
 
     if not tag then
